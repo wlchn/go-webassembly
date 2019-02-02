@@ -1,0 +1,28 @@
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="wasm_exec.js"></script>
+    <script>
+      if (!WebAssembly.instantiateStreaming) { // polyfill
+        WebAssembly.instantiateStreaming = async (resp, importObject) => {
+          const source = await (await resp).arrayBuffer();
+          return await WebAssembly.instantiate(source, importObject);
+        };
+      }
+
+      const go = new Go();
+      let mod, inst;
+      WebAssembly.instantiateStreaming(fetch("lib.wasm"), go.importObject).then(async (result) => {
+        mod = result.module;
+        inst = result.instance;
+        await go.run(inst)
+      });
+    </script>
+  </head>
+  <body>
+    <input type="text" id="value1"/>
+    <input type="text" id="value2"/>
+    <button type="button" id="add" onClick="add('value1', 'value2', 'result');">add</button>
+    <input type="text" id="result"/>
+  </body>
+</html>
